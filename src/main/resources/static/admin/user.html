@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <title>bck_venue</title>
+    <style>
+        html { overflow-x:hidden; }
+        .table {
+            margin-left: 10px;
+        }
+
+        /* 清除面板边框 */
+        .panel-default {
+            border: 0px;
+        }
+
+        /* 控制面板间距 */
+        .panel-body {
+            margin: 0px 10px;
+            width: 1410px;
+        }
+
+        /* 设置按钮间距 */
+        .bt2 {
+            margin-left: 10px;
+        }
+
+        /* 表单1调整 */
+        .form1-tx {
+            width: 50%;
+        }
+
+        .form1-bt {
+            height: 26px;
+        }
+
+        /* 设置发布通知按钮间距 */
+        .preadd-btn {
+            margin-left: 113px;
+        }
+
+        table tbody tr td:last-of-type {
+            width: 120px;
+            border-bottom: 1px solid;
+            border-color: #e3e3e3;
+        }
+    </style>
+</head>
+
+<body>
+<div class="panel panel-default" id="user_vue">
+    <div class="panel-body container">
+        <div class="row">
+            <div class="col-sm-4">
+                <form id="query_venue" >
+                    <span>关键字查询:</span>
+                    <input type="text" class="form1-tx" id="query_key" name="query_key" v-model="query_key">
+                    <input type="button" class="form1-bt btn btn-sm btn-primary" value="查询" @click="currentPage=1,change()">
+                </form>
+            </div>
+            <div class="col-sm-3"></div>
+<!--            <div class="col-sm-2" style="padding-left:80px;">
+                <button type="button" onclick="openadd_user_Modal()"
+                        class="preadd-btn btn btn-success btn-sm">添加用户</button>
+            </div>-->
+            <div class="col-sm-2" style="padding-left: 30px;">
+                <button type="button" onclick="export_user()"
+                        class="preadd-btn btn btn-warning btn-sm">导出数据</button>
+            </div>
+        </div>
+    </div>
+    <!-- Table -->
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>用户ID</th>
+            <th>用户密码</th>
+            <th>性别</th>
+            <th>年龄</th>
+            <th>邮箱</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(user,index) in list">
+            <th scope="row">{{index+1+currentCount*currentPage-currentCount}}</th>
+            <td>{{user.user_Id}}</td>
+            <td>{{user.user_Password}}</td>
+            <td>{{user.user_Sex}}</td>
+            <td>{{user.user_Age}}</td>
+            <td>{{user.user_Email}}</td>
+            <td>
+<!--                <button type="button" class="bt1 btn btn-info btn-xs" @click="openupdate_user_Modal(user.user_Id,
+                  user.user_Password,user.user_Sex,user.user_Age,user.user_Email)">修改</button>-->
+<!--                <button type="button" @click="opendel_user_Modal(user.user_Id)"
+                        class="bt2 btn btn-danger btn-xs">删除</button>-->
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="container" style="width: 1410px;">
+        <div class="row">
+            <div class="col-sm-7" style="margin-top:23px;">
+                <div class="row">
+                    <div class="col-sm-5" style="padding-right: 0px; width:300px">
+                        <span style="font-size: 20px;">当前总共有{{totalCount}}条数据,每页显示</span>
+                    </div>
+                    <div class="col-sm-2" style="padding-left: 10px;padding-right:0px; width:55px;">
+                        <div class="dropdown showpagenum">
+                            <button class="btn btn-default dropdown-toggle" style="height: 27px; padding-top:3px;"
+                                    type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="true">
+                                <span style="display:inline-block;width:11px;">{{currentCount}}</span>
+                                <span class="caret" style="margin-left: 3px;"></span>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenu1"
+                                style="min-width: 41px;overflow:visible;">
+                                <li><a href="javascript:void(0);" @click="currentCount=5,change()"
+                                       style="padding-left:14px;">5</a></li>
+                                <li><a href="javascript:void(0);" @click="currentCount=7,change()"
+                                       style="padding-left:14px;">7</a></li>
+                                <li><a href="javascript:void(0);" @click="currentCount=10,change()"
+                                       style="padding-left:14px;">10</a></li>
+                                <li><a href="javascript:void(0);" @click="currentCount=15,change()"
+                                       style="padding-left:14px;">15</a></li>
+                                <li><a href="javascript:void(0);" @click="currentCount=20,change()"
+                                       style="padding-left:14px;">20</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-sm-4" style="padding-left: 20px;">
+                        <span style="font-size: 20px;">条数据</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5" style="margin-left:-60px;">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+
+
+                        <!-- 判断当前页是否是第一页 -->
+                        <li v-if="currentPage==1" class="disabled">
+                            <a href="javascript:void(0);" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li v-else>
+                            <a href="javascript:void(0);" @click="currentPage--,change()" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <li v-for="index in indexs" v-bind:class="{'active':index == currentPage}">
+                            <a @click="currentPage=index,change()">{{index}}</a>
+                        </li>
+
+                        <!-- 判断当前页是否是最后一页 -->
+                        <li v-if="currentPage==totalPage" class="disabled">
+                            <a href="javascript:void(0);" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li v-else>
+                            <a href="javascript:void(0);" @click="currentPage++,change()" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);">共{{totalPage}}页</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+<script src="../js/jquery-3.4.1.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+<script type="../text/javascript"></script>
+<script src="../js/vue.js"></script>
+<script type="text/javascript">
+    //全局vue
+    let user_vue;
+    $(function () {
+        $.ajax({ type: "POST", url: "/admin/getUser", dataType: "json",
+            data:JSON.stringify({"query_key":"","currentPage":"1","currentCount":"5"}), contentType : "application/json",
+            success: function(data) {
+                user_vue = new Vue({
+                    el:'#user_vue',
+                    data:{
+                        query_key:data.query_key,
+                        currentPage:data.currentPage,
+                        currentCount:data.currentCount,
+                        totalCount:data.totalCount,
+                        totalPage:data.totalPage,
+                        list:data.list
+                    },
+                    computed:{
+                        indexs: function(){
+                            var left = 1;
+                            var right = this.totalPage;
+                            var ar = [];
+                            if(this.totalPage>= 5){
+                                if(this.currentPage > 3 && this.currentPage < this.totalPage-2){
+                                    left = this.currentPage - 2
+                                    right = this.currentPage + 2
+                                }else{
+                                    if(this.currentPage<=3){
+                                        left = 1
+                                        right = 5
+                                    }else{
+                                        right = this.totalPage
+                                        left = this.totalPage - 4
+                                    }
+                                }
+                            }
+                            while (left <= right){
+                                ar.push(left)
+                                left ++
+                            }
+                            return ar
+                        }
+                    },
+                    methods:{
+                        /*触发函数后再次请求数据*/
+                        change(){
+                            $.ajax({ type: "POST", url: "/admin/getUser", dataType: "json",
+                                data:JSON.stringify({"query_key":user_vue.query_key,"currentPage":user_vue.currentPage,"currentCount":user_vue.currentCount}), contentType : "application/json",
+                                success: function(data) {
+                                    user_vue.query_key=data.query_key
+                                    user_vue.currentPage=data.currentPage
+                                    user_vue.currentCount=data.currentCount
+                                    user_vue.totalCount=data.totalCount
+                                    user_vue.totalPage=data.totalPage
+                                    user_vue.list=[]
+                                    for(let i=0;i<data.list.length;i++){
+                                        user_vue.list[i]=data.list[i];
+                                    }
+                                }});
+                        },
+                        /* 编辑场馆 */
+                        openupdate_user_Modal(user_Id,user_Password,user_Sex,user_Age,user_Email) {
+                            var fatherBody = $(window.top.document.body); //获得父窗体的body
+                            //为父窗体添加modal内容
+                            fatherBody.append(' \
+                    <div class="modal fade in" id="update_user_model" role="dialog" style="padding-left: 16px; display: block;">\
+                            <div class="modal-dialog">\
+                                <div class="modal-content" style="margin-top:20%">\
+                                    <form>\
+                                        <div class="modal-header">\
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span\
+                                                    aria-hidden="true">&times;</span></button>\
+                                            <h4 class="modal-title" style="text-align: center;">修改用户</h4>\
+                                        </div>\
+                                        <div class="modal-body">\
+                                            <div class="row" style="margin-top: 3px;">\
+                                                <div class="col-md-2" style="margin-top: 5px;" ><span>用户ID:</span></div>\
+                                                <div class="col-md-9 " style="padding-left:0px">\
+                                                    <input type="text" id="user_Id" class="form-control" readonly="readonly" required autofocus value='
+                                +user_Id+
+                                '>\
+                        </div>\
+                    </div>\
+                    <div class="row"style="margin-top: 3px;">\
+                        <div class="col-md-2" style="margin-top: 5px;"><span>用户密码:</span></div>\
+                        <div class="col-md-9 " style="padding-left:0px">\
+                            <input type="text" id="user_Password" class="form-control" required autofocus value='
+                                +user_Password+
+                                '>\
+                        </div>\
+                    </div>\
+                    <div class="row"style="margin-top: 3px;">\
+                        <div class="col-md-2" style="margin-top: 5px;"><span>性别:</span></div>\
+                        <div class="col-md-9" style="padding-left:0px">\
+                            <input type="text" id="user_Sex" class="form-control" required autofocus value='
+                                +user_Sex+
+                                '>\
+                        </div>\
+                    </div>\
+                    <div class="row"style="margin-top: 3px;">\
+                      <div class="col-md-2" style="margin-top: 5px;"><span>年龄:</span></div>\
+                      <div class="col-md-9" style="padding-left:0px">\
+                          <input type="text" id="user_Age" class="form-control" required autofocus value='
+                                +user_Age+
+                                '>\
+                      </div>\
+                  </div>\
+                    <div class="row"style="margin-top: 3px;">\
+                      <div class="col-md-2" style="margin-top: 5px;"><span>邮箱:</span></div>\
+                      <div class="col-md-9" style="padding-left:0px">\
+                          <input type="text" id="user_Email" class="form-control" required autofocus value='
+                                +user_Email+
+                                '>\
+                      </div>\
+                  </div>\
+                    <div class="modal-footer">\
+                        <button type="button" class="btn btn-default myclose" data-dismiss="modal">取消</button>\
+                        <button type="button" class="submit_update_user btn btn-primary">确认修改</button>\
+                    </div>\
+                </form>\
+            </div>\
+        </div>\
+    </div>');
+                            fatherBody.append("<div id='backdropId_update_user' class='modal-backdrop fade in'></div>"); //为父窗体添加遮罩
+                        },
+                        /* 删除场馆 */
+                        opendel_user_Modal(del_id) {
+                            var fatherBody = $(window.top.document.body); //获得父窗体的body
+                            //为父窗体添加modal内容
+                            fatherBody.append(' \
+                  <div class="modal fade in" id="del_user_model" role="dialog" style="padding-left: 16px; display: block;">\
+                  <div class="modal-dialog" style="margin-top:15%">\
+                      <div class="modal-content" style="width:300px;top: 50%;left: 50%;margin-top: -25px;margin-left: -150px;">\
+                          <form>\
+                            <input type="hidden" id="del_user_id" value='
+                                +del_id+
+                                '>\
+                                  <div class="modal-header">\
+                                      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span\
+                                              aria-hidden="true">&times;</span></button>\
+                                      <h4 class="modal-title" style="text-align: center;">操作提示</h4>\
+                                  </div>\
+                                  <div class="modal-body">\
+                                      <label for="message-text" class="control-label">确定要删除所选用户？</label>\
+                                  </div>\
+                                  <div class="modal-footer">\
+                                  <button type="button" class="btn btn-default myclose" data-dismiss="modal">取消</button>\
+                                  <button type="button" class="submit_del_user btn btn-danger">确定</button>\
+                              </div>\
+                              </form>\
+                          </div>\
+                      </div>\
+                    </div>');
+                            fatherBody.append("<div id='backdropId_del_user' class='modal-backdrop fade in'></div>"); //为父窗体添加遮罩
+                        }
+                    }
+
+                })
+            }});
+    });
+
+    /* 导出场馆数据 */
+    function export_user(){
+        this.location.href="/admin/exportUser";
+    }
+
+    /* 添加新的场馆 */
+    function openadd_user_Modal() {
+        var fatherBody = $(window.top.document.body); //获得父窗体的body
+        //为父窗体添加modal内容
+        fatherBody.append(' \
+                <div class="modal fade in" id="add_user_model" role="dialog" style="padding-left: 16px; display: block;">\
+                <div class="modal-dialog">\
+                    <div class="modal-content" style="margin-top:20%">\
+                        <form>\
+                            <div class="modal-header">\
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span\
+                                        aria-hidden="true">&times;</span></button>\
+                                <h4 class="modal-title" style="text-align: center;">添加用户</h4>\
+                            </div>\
+                            <div class="modal-body">\
+                                <div class="row" style="margin-top: 3px;">\
+                                    <div class="col-md-2" style="margin-top: 5px;" ><span>用户ID:</span></div>\
+                                    <div class="col-md-9 " style="padding-left:0px">\
+                                        <input type="text" id="user_Id" class="form-control" required autofocus>\
+                                    </div>\
+                                </div>\
+                                <div class="row"style="margin-top: 3px;">\
+                                    <div class="col-md-2" style="margin-top: 5px;"><span>用户密码:</span></div>\
+                                    <div class="col-md-9 " style="padding-left:0px">\
+                                        <input type="text" id="user_Password" class="form-control" required autofocus>\
+                                    </div>\
+                                </div>\
+                                <div class="row"style="margin-top: 3px;">\
+                                    <div class="col-md-2" style="margin-top: 5px;"><span>性别:</span></div>\
+                                    <div class="col-md-9" style="padding-left:0px">\
+                                        <input type="text" id="user_Sex" class="form-control" required autofocus>\
+                                    </div>\
+                                </div>\
+                                <div class="row"style="margin-top: 3px;">\
+                                	<div class="col-md-2" style="margin-top: 5px;"><span>年龄:</span></div>\
+                                	<div class="col-md-9" style="padding-left:0px">\
+                                    	<input type="text" id="user_Age" class="form-control" required autofocus>\
+                                	</div>\
+                            	</div>\
+                                <div class="row"style="margin-top: 3px;">\
+                                    <div class="col-md-2" style="margin-top: 5px;"><span>邮箱:</span></div>\
+                                    <div class="col-md-9" style="padding-left:0px">\
+                                        <input type="text" id="user_Email" class="form-control" required autofocus>\
+                                    </div>\
+                                </div>\
+                            </div>\
+                            <div class="modal-footer">\
+                                <button type="button" class="btn btn-default myclose" data-dismiss="modal">取消</button>\
+                                <button type="button" class="submit_add_user btn btn-primary">确认添加</button>\
+                            </div>\
+                        </form>\
+                    </div>\
+                </div>\
+            </div>');
+        fatherBody.append("<div id='backdropId_add_user' class='modal-backdrop fade in'></div>"); //为父窗体添加遮罩
+    }
+</script>
+</html>
